@@ -1,58 +1,113 @@
-# Digital Product Passport (DPP) Frontend
+# DPP Frontend
 
-Esta é uma aplicação Next.js (React) que serve de Interface Gráfica para o **Hyperledger Cacti DPP Plugin**. Permite acompanhar o ciclo de vida e submeter transações de origem (Minting), transporte e receção de produtos de forma visual.
+Next.js dashboard for managing **Digital Product Passports (DPP)** powered by ERC-721 NFTs and SATP cross-chain interoperability. Communicates with the blockchain through the [Hyperledger Cacti DPP Plugin](https://github.com/edsonCVN/cacti-edson-fork/tree/dpp-plugin/packages/cactus-plugin-dpp) REST API.
 
-## 🚀 Arquitetura do Sistema
+## Architecture
 
-O frontend comunica com a rede blockchain **através da API REST do Cacti**.
-Isto significa que os consumidores ou empresas não interagem diretamente usando as suas carteiras (ex: MetaMask), mas enviam os dados preenchidos nos formulários para o Backend Cacti (que corre localmente na porta `3000`), e o Cacti, usando o plugin `EVMDPPLeaf` que configurámos, atua como um "proxy fidedigno" e traduz o pedido REST numa transação inteligente (`createDPP`, `updateTransportData`, etc.).
-
-## 📦 Funcionalidades Baseadas em Funções (Role-Based)
-
-Dependendo do utilizador ativo, diferentes ações estão disponíveis:
-* **Consumidor:** Pode apenas visualizar a rastreabilidade e submeter *Reviews* (guardadas Off-Chain).
-* **Agricultor (`FARMER_ROLE`):** Permissão exclusiva para gerar (Mint) novos Passaportes de Origem.
-* **Processador (`PROCESSOR_ROLE`):** Pode agregar produtos ou juntar Certificações.
-* **Transportador (`TRANSPORTER_ROLE`):** Acesso único para atualizar a telemetria em tempo real (GPS, Temperatura).
-* **Retalhista (`RETAILER_ROLE`):** Acesso para receber o Lote no armazém.
-* **Admin:** Gestor absoluto que controla fluxos *Cross-Chain* SATP (Lock/Burn para mover ativos para outra Blockchain).
-
-## 🛠️ Como Iniciar o Projeto (Passo a Passo)
-
-Para teres as camadas todas a funcionar em simultâneo no teu computador, segue esta ordem:
-
-### Passo 1: Ligar a Blockchain Local (EVM)
-Abre um terminal e navega para o backend do Cacti onde tens o ficheiro dos Smart Contracts.
-```bash
-cd /Users/edsondaveiga/Desktop/Desertação/code/cacti-edson-fork/packages/cactus-plugin-dpp
-anvil
 ```
-*(Mantém este terminal aberto. O Anvil vai gerar as 10 contas de teste na porta 8545).*
+┌──────────────────┐     ┌──────────────────────┐     ┌──────────────────┐
+│  DPP Frontend    │────▶│  Cacti API Gateway    │────▶│  EVM Blockchain  │
+│  (Next.js :3000) │     │  (Express :3002)      │     │  (Anvil :8545)   │
+└──────────────────┘     └──────────────────────┘     └──────────────────┘
+```
 
-### Passo 2: Compilar, Fazer Deploy e Iniciar a API do Hyperledger Cacti
-O nosso script avançado trata de tudo automaticamente! Noutro terminal, na mesma pasta do plugin Cacti, corre o orquestrador. Ele irá:
-1. Compilar o `DigitalProductPassport.sol`.
-2. Fazer Deploy nativo para a tua instância local do Anvil.
-3. Injetar o novo endereço e arrancar a API.
+The frontend does **not** interact directly with the blockchain. All transactions are dispatched through the Cacti API Gateway, which uses role-aware signers to submit on-chain transactions on behalf of the user.
+
+## Features
+
+- **Role-Based Dashboard** — UI adapts to the active role (Farmer, Processor, Transporter, Retailer, Admin)
+- **DPP Minting** — Create new passports with structured metadata (origin, variety, calibre, certifications)
+- **Multi-Select Batch Transfers** — Transfer one or more DPPs simultaneously, both locally and cross-chain
+- **DPP Aggregation** — Combine multiple DPPs into a lot with merged metadata and inherited history
+- **Transport Tracking** — Record location, temperature, and condition data
+- **Retail Updates** — Mark as received and update retail information
+- **Passport Detail View** — Full lifecycle history, certifications, metadata, and packaging/recycling info
+- **Cross-Chain Transfers (SATP)** — Lock and transfer assets to other blockchains
+
+## Role Permissions
+
+| Role | Capabilities |
+|------|-------------|
+| Farmer | Mint new DPPs, transfer ownership |
+| Processor | Aggregate DPPs into lots, add certifications, amend metadata |
+| Transporter | Update transport data (GPS, temperature, conditions) |
+| Retailer | Mark as received, update retail data |
+| Admin | All of the above + cross-chain SATP operations |
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- [Anvil](https://book.getfoundry.sh/anvil/) running on `http://127.0.0.1:8545`
+- [Cacti DPP API Gateway](https://github.com/edsonCVN/cacti-edson-fork/tree/dpp-plugin/packages/cactus-plugin-dpp) running on `http://127.0.0.1:3002`
+
+### 1. Start the Backend
+
+In separate terminals:
+
 ```bash
-cd /Users/edsondaveiga/Desktop/Desertação/code/cacti-edson-fork/packages/cactus-plugin-dpp
+# Terminal 1: Start local blockchain
+anvil
+
+# Terminal 2: Deploy contract and start API gateway
+cd path/to/cacti-edson-fork/packages/cactus-plugin-dpp
 npx ts-node scripts/launch-api.ts
 ```
-*(A API fica pronta a receber pedidos REST em `http://127.0.0.1:3000`).*
 
-### Passo 3: Iniciar o Frontend
-No terminal deste projeto (o teu repositório de frontend), instala as dependências (caso não o tenhas feito) e arranca o servidor Next.js.
+### 2. Start the Frontend
+
 ```bash
 npm install
 npm run dev
 ```
 
-Abre o browser em [http://localhost:3001](http://localhost:3001).
-Os cliques nos botões deste Dashboard vão agora efetuar chamadas Reais via `Axios` ao Gateway Cacti, assinando transações Blockchain automaticamente na tua rede local de demonstração!
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Variáveis de Ambiente
-Cria um ficheiro `.env.local` na raiz deste projeto com:
+### Environment Variables
+
+Create a `.env.local` file to override the default API URL:
+
 ```env
-NEXT_PUBLIC_CACTI_API_URL=http://localhost:3000
+NEXT_PUBLIC_CACTI_API_URL=http://127.0.0.1:3002
 ```
-Se o teu servidor Cacti estiver noutra porta, ajusta aqui.
+
+## Project Structure
+
+```
+dpp-frontend/
+├── app/
+│   ├── layout.tsx                 # Root layout with fonts and metadata
+│   ├── page.tsx                   # Landing page
+│   └── dashboard/
+│       ├── layout.tsx             # Dashboard sidebar and navigation
+│       ├── page.tsx               # Dashboard overview
+│       ├── mint/page.tsx          # DPP minting form
+│       ├── transfer/page.tsx      # Multi-select transfer page
+│       ├── aggregate/page.tsx     # DPP aggregation into lots
+│       ├── roles/page.tsx         # Role management and info
+│       └── passport/[id]/page.tsx # Passport detail view
+├── components/
+│   ├── local-transfer-modal.tsx   # Batch local transfer modal
+│   ├── transfer-modal.tsx         # Batch cross-chain transfer modal
+│   ├── product-card.tsx           # DPP card component
+│   ├── role-action-panels.tsx     # Role-specific action panels
+│   ├── packaging-recycling.tsx    # Circular economy info display
+│   └── ui/                        # shadcn/ui components
+├── contexts/
+│   └── role-context.tsx           # Role state and address mapping
+└── lib/
+    └── api.ts                     # Axios client for Cacti API
+```
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **UI**: Tailwind CSS 4, shadcn/ui, Radix UI primitives
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
+- **Notifications**: Sonner
+
+## License
+
+Apache-2.0
