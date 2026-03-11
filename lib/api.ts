@@ -50,7 +50,7 @@ export const fetchDPPHistory = async (dppId: string) => {
   }
 };
 
-export const fetchConfig = async (): Promise<{ contractAddress: string; network: string }> => {
+export const fetchConfig = async (): Promise<{ contractAddress: string; network: string; satpGateway?: string }> => {
   try {
     const response = await apiClient.get(`/api/v1/@hyperledger/cactus-plugin-dpp/config`);
     return response.data;
@@ -152,6 +152,50 @@ export const addCertification = async (payload: any) => {
     return response.data;
   } catch (error) {
     console.error("Failed to add certification:", error);
+    throw error;
+  }
+};
+
+export interface CrossChainTransferPayload {
+  dppId: string | number;
+  receiverAddress?: string;
+  sourceOwner?: string;
+}
+
+/**
+ * Initiate a SATP cross-chain transfer via the API gateway (proxied to SATP Hermes gateway-1).
+ * Returns { sessionId } which can be polled with getCrossChainStatus.
+ */
+export const crossChainTransferDPP = async (payload: CrossChainTransferPayload) => {
+  try {
+    const response = await apiClient.post(
+      "/api/v1/@hyperledger/cactus-plugin-dpp/cross-chain-transfer",
+      payload,
+    );
+    return response.data as { sessionId: string; raw: any };
+  } catch (error) {
+    console.error("Failed to initiate cross-chain transfer:", error);
+    throw error;
+  }
+};
+
+/**
+ * Poll the SATP session status for a running cross-chain transfer.
+ * Returns { status, phase, ... } from SATP Hermes gateway-1.
+ */
+export const getCrossChainStatus = async (sessionId: string) => {
+  try {
+    const response = await apiClient.get(
+      "/api/v1/@hyperledger/cactus-plugin-dpp/cross-chain-status",
+      { params: { sessionId } },
+    );
+    return response.data;
+  } catch (error: any) {
+    // 400/404 are expected during early polling (session still initialising) — suppress noise
+    const status = error?.response?.status;
+    if (status !== 400 && status !== 404) {
+      console.error("Failed to get cross-chain status:", error);
+    }
     throw error;
   }
 };
