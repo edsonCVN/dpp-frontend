@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
   // Mock settings state
   const [settings, setSettings] = useState({
-    network: "anvil",
+    network: "evm-local",
     gasLimit: "300000",
     notifications: true,
     autoRefresh: true,
@@ -104,7 +104,7 @@ export default function SettingsPage() {
                 <SelectValue placeholder="Select network" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="anvil">Anvil Localnet</SelectItem>
+                <SelectItem value="evm-local">EVM Localnet</SelectItem>
                 <SelectItem value="sepolia">Sepolia Testnet</SelectItem>
                 <SelectItem value="goerli">Goerli Testnet</SelectItem>
                 <SelectItem value="mainnet">Ethereum Mainnet</SelectItem>

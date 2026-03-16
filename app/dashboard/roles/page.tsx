@@ -30,7 +30,7 @@ import { toast } from "sonner"
 
 export default function RolesPage() {
   const router = useRouter()
-  const { currentRole, hasPermission } = useRole()
+  const { hasPermission } = useRole()
   const [copied, setCopied] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newAddress, setNewAddress] = useState("")
@@ -77,7 +77,7 @@ export default function RolesPage() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold tracking-tight">Network Roles</h2>
         <p className="text-muted-foreground mt-1">
-          View and manage participant roles assigned on the smart contract. Each role maps to an Anvil signer account.
+          View and manage participant roles assigned on the smart contract. Each role maps to a local EVM signer account.
         </p>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Shield,
   LayoutDashboard,
@@ -61,6 +61,7 @@ export default function DashboardLayout({
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const router = useRouter()
   const { currentRole, setCurrentRole, roleInfo, hasPermission } = useRole()
 
   const visibleNavItems = navItems.filter((item) =>
@@ -69,7 +70,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   // Wallet address is now dynamically tied to the active role
   const walletAddress = `${roleInfo.address.slice(0, 6)}...${roleInfo.address.slice(-3)}`
-  const networkName = "Anvil Localnet"
+  const networkName = "EVM Localnet"
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -179,7 +180,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 {Object.values(ROLES).map((role) => (
                   <DropdownMenuItem
                     key={role.id}
-                    onClick={() => setCurrentRole(role.id as UserRole)}
+                    onClick={() => { setCurrentRole(role.id as UserRole); router.push("/dashboard") }}
                     className={cn(
                       "flex flex-col items-start gap-0.5 py-2",
                       currentRole === role.id && "bg-accent"
