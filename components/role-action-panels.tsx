@@ -6,7 +6,7 @@ import {
   Layers,
   FileEdit,
   Award,
-  Thermometer,
+  Truck,
   MapPin,
   Clock,
   PackageCheck,
@@ -405,7 +405,7 @@ export function ProcessorPanel({ onAction, dppId, productData }: ActionPanelProp
   )
 }
 
-// Transporter Panel - Log Telemetry
+// Transporter Panel - Log Shipping Data
 export function TransporterPanel({ onAction, dppId }: ActionPanelProps) {
   const { roleInfo } = useRole()
   const [isLoading, setIsLoading] = useState(false)
@@ -417,9 +417,10 @@ export function TransporterPanel({ onAction, dppId }: ActionPanelProps) {
       await updateTransportData({
         dppId: dppId || "0",
         transportData: {
-          location: (document.getElementById("location") as HTMLInputElement)?.value || "Unknown",
+          locationFrom: (document.getElementById("locationFrom") as HTMLInputElement)?.value || "Unknown",
+          locationTo: (document.getElementById("locationTo") as HTMLInputElement)?.value || "Unknown",
           timestamp: (document.getElementById("timestamp") as HTMLInputElement)?.value || new Date().toISOString(),
-          conditionData: "Optimal",
+          conditionData: (document.getElementById("condition-select") as HTMLInputElement)?.value || "Optimal",
           handler: roleInfo.userName,
           handlerAddress: roleInfo.address
         }
@@ -431,7 +432,7 @@ export function TransporterPanel({ onAction, dppId }: ActionPanelProps) {
     } catch (e) {
       console.error(e);
       setIsLoading(false);
-      alert("Failed to Log Telemetry via Cacti API");
+      alert("Failed to log shipping data via Cacti API");
     }
   }
 
@@ -439,20 +440,29 @@ export function TransporterPanel({ onAction, dppId }: ActionPanelProps) {
     <div className="p-5 rounded-xl bg-blue-500/5 border border-blue-500/20">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-          <Thermometer className="w-5 h-5 text-blue-400" />
+          <Truck className="w-5 h-5 text-blue-400" />
         </div>
         <div>
-          <h4 className="font-semibold">Log Telemetry Data</h4>
-          <p className="text-xs text-muted-foreground">Record transport conditions</p>
+          <h4 className="font-semibold">Log Shipping Data</h4>
+          <p className="text-xs text-muted-foreground">Record shipping origin, destination, and conditions</p>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="location">Current Location</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input id="location" placeholder="e.g., Lisbon Port, Portugal" className="pl-9" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="locationFrom">From</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input id="locationFrom" placeholder="e.g., Fundão, Portugal" className="pl-9" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="locationTo">To</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input id="locationTo" placeholder="e.g., Lisbon Port, Portugal" className="pl-9" />
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -464,46 +474,39 @@ export function TransporterPanel({ onAction, dppId }: ActionPanelProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="temperature">Temperature (°C)</Label>
-            <div className="relative">
-              <Thermometer className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input id="temperature" type="number" placeholder="4.5" className="pl-9" />
-            </div>
+            <Label htmlFor="condition-select">Condition Notes</Label>
+            <Select>
+              <SelectTrigger id="condition-select">
+                <SelectValue placeholder="Select condition" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="optimal">Optimal</SelectItem>
+                <SelectItem value="good">Good</SelectItem>
+                <SelectItem value="acceptable">Acceptable</SelectItem>
+                <SelectItem value="concern">Concern - Needs Review</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="condition">Condition Notes</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select condition" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="optimal">Optimal</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="acceptable">Acceptable</SelectItem>
-              <SelectItem value="concern">Concern - Needs Review</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button 
-          onClick={handleLog} 
+        <Button
+          onClick={handleLog}
           disabled={isLoading || success}
           className="w-full bg-blue-600 hover:bg-blue-700"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Recording Data...
+              Recording Shipping Data...
             </>
           ) : success ? (
             <>
               <Check className="w-4 h-4 mr-2" />
-              Telemetry Logged!
+              Shipping Data Logged!
             </>
           ) : (
             <>
-              <Thermometer className="w-4 h-4 mr-2" />
-              Log Telemetry Data
+              <Truck className="w-4 h-4 mr-2" />
+              Log Shipping Data
             </>
           )}
         </Button>
@@ -529,9 +532,10 @@ export function RetailerPanel({ onAction, dppId, productData }: ActionPanelProps
           handlerAddress: roleInfo.address
         });
       } else if (action === "shelf") {
-        await updateRetailData({ 
+        await updateRetailData({
           dppId: dppId || "0",
           shelfLife: (document.getElementById("shelfLife") as HTMLInputElement)?.value || "2025-12-31",
+          price: (document.getElementById("price") as HTMLInputElement)?.value || "",
           handler: roleInfo.userName,
           handlerAddress: roleInfo.address
         });
@@ -555,8 +559,8 @@ export function RetailerPanel({ onAction, dppId, productData }: ActionPanelProps
             <PackageCheck className="w-4 h-4 text-purple-400" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm">Mark as Received</h4>
-            <p className="text-xs text-muted-foreground">Confirm product arrival at store</p>
+            <h4 className="font-semibold text-sm">Mark as Available</h4>
+            <p className="text-xs text-muted-foreground">Make product visible to consumers</p>
           </div>
         </div>
         <Button 
@@ -569,7 +573,7 @@ export function RetailerPanel({ onAction, dppId, productData }: ActionPanelProps
           ) : (
             <PackageCheck className="w-4 h-4 mr-2" />
           )}
-          Mark as Received
+          Mark as Available
         </Button>
       </div>
 
