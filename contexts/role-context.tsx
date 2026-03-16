@@ -47,7 +47,7 @@ export const ROLES: Record<UserRole, RoleInfo> = {
   transporter: {
     id: "transporter",
     label: "Transporter",
-    description: "Can log telemetry and transport data",
+    description: "Can log shipping data and transport conditions",
     color: "bg-blue-500",
     userName: "Global Logistics Ltd",
     address: "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
@@ -55,7 +55,7 @@ export const ROLES: Record<UserRole, RoleInfo> = {
   retailer: {
     id: "retailer",
     label: "Retailer",
-    description: "Can mark received and update retail data",
+    description: "Can mark products as available and update retail data",
     color: "bg-purple-500",
     userName: "Continente Retail Group",
     address: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"

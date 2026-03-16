@@ -42,7 +42,7 @@ const statusConfig: Record<ProductStatus, { label: string; className: string; ic
     icon: Truck,
   },
   received: {
-    label: "Received",
+    label: "Available",
     className: "bg-teal-500/10 text-teal-500 border-teal-500/20",
     icon: CheckCircle,
   },
