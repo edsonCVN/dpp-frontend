@@ -43,6 +43,8 @@ const EVENT_LABELS: Record<string, { title: string; type: TimelineEvent["type"] 
   Mint:           { title: "Harvest Registered",              type: "created" },
   Transfer:       { title: "Ownership Transferred",           type: "transfer" },
   Aggregate:      { title: "Processing & Packing",            type: "aggregated" },
+  Disaggregate:   { title: "Split into Multiple DPPs",         type: "aggregated" },
+  Disaggregated:  { title: "Disaggregated (Original Revoked)",  type: "inspection" },
   Transport:      { title: "Shipped (Cold Chain)",             type: "shipped" },
   Received:       { title: "Marked as Available",               type: "received" },
   Retail:         { title: "Retail Data Updated",              type: "retail" },
@@ -105,6 +107,16 @@ function buildEventDetails(item: any, actorName: string): { description: string;
     case "Aggregate":
       return {
         description: `Products aggregated into lot by ${actorName}`,
+        location: "Processing Facility",
+      }
+    case "Disaggregate":
+      return {
+        description: `New DPP created from disaggregation by ${actorName}`,
+        location: "Processing Facility",
+      }
+    case "Disaggregated":
+      return {
+        description: `DPP split into multiple copies by ${actorName} — original revoked`,
         location: "Processing Facility",
       }
     case "Amend":

@@ -110,6 +110,16 @@ export const updateRetailData = async (payload: any) => {
     }
 };
 
+export const disaggregateDPP = async (payload: any) => {
+    try {
+      const response = await apiClient.post("/api/v1/@hyperledger/cactus-plugin-dpp/disaggregate", payload);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to disaggregate DPP:", error);
+      throw error;
+    }
+};
+
 export const aggregateDPPtoBox = async (payload: any) => {
     try {
       const response = await apiClient.post("/api/v1/@hyperledger/cactus-plugin-dpp/aggregate", payload);
