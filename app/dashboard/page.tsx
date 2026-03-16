@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { ProductCard, type ProductPassport } from "@/components/product-card"
 import { getAllPassports } from "@/lib/api"
 import { toast } from "sonner"
-import { useRole, ROLES } from "@/contexts/role-context"
+import { useRole } from "@/contexts/role-context"
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -34,14 +34,14 @@ export default function DashboardPage() {
     fetchPassports();
   }, [])
 
-  // Filter passports by ownership based on the current role:
+  // Filter passports by role:
   // - Admin: sees all DPPs
-  // - Consumer: sees only DPPs owned by the Retailer (public storefront view)
+  // - Consumer: sees only DPPs marked as available (received/retail-ready status)
   // - Other roles: see only DPPs they own
   const ownerFilteredPassports = passports.filter((passport) => {
     if (currentRole === "admin") return true
     if (currentRole === "consumer") {
-      return passport.ownerAddress?.toLowerCase() === ROLES.retailer.address.toLowerCase()
+      return passport.status?.toLowerCase() === "received"
     }
     return passport.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
   })
