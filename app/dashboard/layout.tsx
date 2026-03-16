@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { RoleProvider, useRole, ROLES, type UserRole } from "@/contexts/role-context"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface NavItem {
   href: string
@@ -195,6 +196,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Network Indicator */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-xs">
