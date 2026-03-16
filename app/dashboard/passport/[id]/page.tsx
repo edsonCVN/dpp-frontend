@@ -3,32 +3,28 @@
 import React, { useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { 
-  ArrowLeft, 
-  ExternalLink, 
-  Copy, 
+import {
+  ArrowLeft,
+  ExternalLink,
+  Copy,
   Check,
   Package,
   Calendar,
-  Link as LinkIcon,
   Network,
-  ArrowRightLeft,
   FileText,
   Building,
   Hash,
-  Send,
   Sparkles,
-  AlertTriangle,
   Shield,
-  Loader2
+  Loader2,
+  User,
+  Clock,
+  Euro
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { SupplyChainTimeline, type TimelineEvent } from "@/components/supply-chain-timeline"
 import { PackagingRecycling } from "@/components/packaging-recycling"
-import { TransferModal } from "@/components/transfer-modal"
-import { LocalTransferModal } from "@/components/local-transfer-modal"
 import { useRole, ROLES } from "@/contexts/role-context"
 import { fetchDPPData, fetchDPPHistory, fetchConfig } from "@/lib/api"
 import { toast } from "sonner"
@@ -48,7 +44,7 @@ const EVENT_LABELS: Record<string, { title: string; type: TimelineEvent["type"] 
   Transfer:       { title: "Ownership Transferred",           type: "transfer" },
   Aggregate:      { title: "Processing & Packing",            type: "aggregated" },
   Transport:      { title: "Shipped (Cold Chain)",             type: "shipped" },
-  Received:       { title: "Received at Destination",          type: "received" },
+  Received:       { title: "Marked as Available",               type: "received" },
   Retail:         { title: "Retail Data Updated",              type: "retail" },
   Amend:          { title: "Metadata Amended",                 type: "inspection" },
   Certification:  { title: "Quality Control Passed",           type: "certification" },
@@ -67,6 +63,89 @@ function resolveActor(address: string): string {
   return found ? found.userName : `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
+// Build a context-rich description and location from enriched history data
+function buildEventDetails(item: any, actorName: string): { description: string; location: string } {
+  const event = item.event || ""
+
+  switch (event) {
+    case "Mint":
+      return {
+        description: `Origin passport created by ${actorName}`,
+        location: "Origin Farm",
+      }
+    case "Transport":
+      if (item.locationFrom && item.locationTo) {
+        const cond = item.conditionData && item.conditionData !== "{}" ? ` — ${item.conditionData}` : ""
+        return {
+          description: `Shipped from ${item.locationFrom} to ${item.locationTo}${cond}`,
+          location: `${item.locationFrom} → ${item.locationTo}`,
+        }
+      }
+      return { description: `Shipped by ${actorName}`, location: "In Transit" }
+    case "Certification": {
+      const cert = item.certification
+      const certLabel = typeof cert === "string"
+        ? cert
+        : cert?.certId || cert?.name || JSON.stringify(cert)
+      return {
+        description: `Certification added: ${certLabel}`,
+        location: "On-chain",
+      }
+    }
+    case "Received":
+      return {
+        description: `Marked as available by ${actorName}`,
+        location: "Retail Store",
+      }
+    case "Retail":
+      return {
+        description: `Retail data updated by ${actorName}`,
+        location: "Retail Store",
+      }
+    case "Aggregate":
+      return {
+        description: `Products aggregated into lot by ${actorName}`,
+        location: "Processing Facility",
+      }
+    case "Amend":
+      return {
+        description: `Metadata amended by ${actorName}`,
+        location: "On-chain",
+      }
+    case "Transfer":
+      return {
+        description: `Ownership transferred by ${actorName}`,
+        location: "On-chain",
+      }
+    case "Lock":
+    case "SATPLock":
+      return {
+        description: `Asset locked in escrow for cross-chain transfer`,
+        location: "Source Chain",
+      }
+    case "CrossChainBurn":
+      return {
+        description: `Asset burned on source chain (SATP Phase 3)`,
+        location: "Source Chain",
+      }
+    case "CrossChainMint":
+      return {
+        description: `Asset minted on destination chain via SATP`,
+        location: "Destination Chain",
+      }
+    case "Revoke":
+      return {
+        description: `Passport revoked by ${actorName}`,
+        location: "On-chain",
+      }
+    default:
+      return {
+        description: `On-chain • ${actorName}`,
+        location: "On-chain",
+      }
+  }
+}
+
 const statusConfig: Record<ProductStatus, { label: string; className: string }> = {
   active: {
     label: "Active Passport",
@@ -77,7 +156,7 @@ const statusConfig: Record<ProductStatus, { label: string; className: string }> 
     className: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   },
   received: {
-    label: "Received",
+    label: "Available",
     className: "bg-teal-500/10 text-teal-500 border-teal-500/20",
   },
   locked: {
@@ -102,8 +181,6 @@ export default function PassportDetailPage() {
   const params = useParams()
   const productId = params.id as string
   const [copied, setCopied] = useState<string | null>(null)
-  const [transferModalOpen, setTransferModalOpen] = useState(false)
-  const [localTransferModalOpen, setLocalTransferModalOpen] = useState(false)
   const { currentRole, roleInfo } = useRole()
 
   const [product, setProduct] = useState<any>(null)
@@ -154,6 +231,9 @@ export default function PassportDetailPage() {
           attributes: dpp.publicData?.attributes || [],
           logistics: dpp.publicData?.logistics || {},
           circular_economy: dpp.publicData?.circular_economy || null,
+          ownerAddress: dpp.owner || "Unknown",
+          shelfLife: dpp.publicData?.shelfLife || null,
+          price: dpp.publicData?.price || null,
         })
       } else if (data.status === "rejected") {
         toast.error(`Failed to load DPP: ${data.reason?.message}`)
@@ -185,15 +265,14 @@ export default function PassportDetailPage() {
               ? new Date(item.timestamp).toLocaleString()
               : "Unknown"
 
-          // Build a contextual subtitle: "On-chain • Actor Name"
-          const subtitle = item.description || item.details || `On-chain • ${actorName}`
+          const details = buildEventDetails(parsed, actorName)
 
           return {
             id: String(i),
             type: label?.type || "inspection",
             title: label?.title || eventKey || `Event #${i + 1}`,
-            description: subtitle,
-            location: item.location || "On-chain",
+            description: details.description,
+            location: details.location,
             timestamp: ts,
             actor: actorName,
             txHash: item.txHash || item.transactionHash || "",
@@ -320,6 +399,25 @@ export default function PassportDetailPage() {
                 label="Harvest Date"
                 value={product.createdAt}
               />
+              <DetailItem
+                icon={<User className="w-4 h-4" />}
+                label="Current Owner"
+                value={resolveActor(product.ownerAddress)}
+              />
+              {product.shelfLife && (
+                <DetailItem
+                  icon={<Clock className="w-4 h-4" />}
+                  label="Shelf Life Expiry"
+                  value={product.shelfLife}
+                />
+              )}
+              {product.price && (
+                <DetailItem
+                  icon={<Euro className="w-4 h-4" />}
+                  label="Retail Price"
+                  value={`€${product.price}`}
+                />
+              )}
             </div>
           </div>
 
@@ -380,7 +478,7 @@ export default function PassportDetailPage() {
                 <p className="text-xs text-muted-foreground mb-1.5">Network</p>
                 <div className="flex items-center gap-2">
                   <Network className="w-4 h-4 text-primary" />
-                  <span className="text-sm">Anvil Localnet</span>
+                  <span className="text-sm">EVM Localnet</span>
                 </div>
               </div>
             </div>
@@ -533,17 +631,6 @@ export default function PassportDetailPage() {
         )}
       </div>
 
-      {/* Transfer Modals */}
-      <LocalTransferModal
-        isOpen={localTransferModalOpen}
-        onClose={() => setLocalTransferModalOpen(false)}
-        passports={[{ id: product.id, tokenId: product.tokenId, name: product.name, createdAt: product.createdAt, status: product.status }]}
-      />
-      <TransferModal
-        isOpen={transferModalOpen}
-        onClose={() => setTransferModalOpen(false)}
-        passports={[{ id: product.id, tokenId: product.tokenId, name: product.name, createdAt: product.createdAt, status: product.status }]}
-      />
     </div>
   )
 }
