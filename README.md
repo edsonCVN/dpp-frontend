@@ -51,6 +51,7 @@ The frontend never talks to the blockchain directly. All transactions go through
 - **Batch Local Transfers** — Transfer one or more DPPs to another address on the same chain
 - **Cross-Chain Transfers (SATP)** — Real SATP Hermes integration: lock on chain 1 → mint + assign on chain 2, with live progress and session ID display
 - **DPP Aggregation** — Combine multiple DPPs into a lot with merged metadata and inherited history
+- **DPP Disaggregation** — Split a single DPP into 2–20 independent child DPPs; the origin is revoked and each child inherits the original metadata and certifications
 - **Transport Tracking** — Record location, temperature, and condition data
 - **Retail Updates** — Mark as received and update retail information
 - **Passport Detail View** — Full lifecycle history, certifications, metadata, and packaging/recycling info
@@ -61,7 +62,7 @@ The frontend never talks to the blockchain directly. All transactions go through
 | Role | Address (Hardhat default) | Capabilities |
 |------|--------------------------|-------------|
 | Farmer | `0x70997970...dc79C8` | Mint new DPPs, transfer ownership |
-| Processor | `0x3C44CdDd...293BC` | Aggregate DPPs into lots, add certifications, amend metadata |
+| Processor | `0x3C44CdDd...293BC` | Aggregate/disaggregate DPPs, add certifications, amend metadata |
 | Transporter | `0x90F79bf6...b906` | Update transport data (GPS, temperature, conditions) |
 | Retailer | `0x15d34AAf...A65` | Mark as received, update retail data |
 | Admin | `0xf39Fd6e5...266` | All of the above + cross-chain SATP transfers |
@@ -228,6 +229,7 @@ dpp-frontend/
 │       ├── mint/page.tsx            # DPP minting form
 │       ├── transfer/page.tsx        # Multi-select local and cross-chain transfer
 │       ├── aggregate/page.tsx       # Aggregate DPPs into a lot
+│       ├── disaggregate/page.tsx   # Split a DPP into multiple child DPPs
 │       ├── roles/page.tsx           # Role information and address mapping
 │       ├── settings/page.tsx        # API gateway URL configuration
 │       └── passport/[id]/page.tsx   # Passport detail view
@@ -235,8 +237,10 @@ dpp-frontend/
 │   ├── local-transfer-modal.tsx     # Batch local transfer modal
 │   ├── transfer-modal.tsx           # Cross-chain (SATP) transfer modal with real API + polling
 │   ├── product-card.tsx             # DPP card component
+│   ├── mint-modal.tsx               # Minting modal
 │   ├── role-action-panels.tsx       # Role-specific action panels
 │   ├── packaging-recycling.tsx      # Circular economy info display
+│   ├── supply-chain-timeline.tsx    # Timeline visualization
 │   └── ui/                          # shadcn/ui components
 ├── contexts/
 │   └── role-context.tsx             # Active role state and address mapping
