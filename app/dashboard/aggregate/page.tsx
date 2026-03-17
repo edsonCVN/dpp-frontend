@@ -143,7 +143,7 @@ export default function AggregatePage() {
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Aggregate Lots</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Aggregate DPPs</h2>
         <p className="text-muted-foreground mt-1">
           Combine multiple Digital Product Passports into a single aggregated lot for bulk transfers.
         </p>

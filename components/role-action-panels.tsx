@@ -383,7 +383,7 @@ export function ProcessorPanel({ onAction, dppId, productData }: ActionPanelProp
             <Layers className="w-4 h-4 text-amber-400" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm">Aggregate into Box/Lot</h4>
+            <h4 className="font-semibold text-sm">Aggregate DPPs</h4>
             <p className="text-xs text-muted-foreground">Combine multiple DPPs</p>
           </div>
         </div>

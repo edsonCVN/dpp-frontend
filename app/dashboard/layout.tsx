@@ -42,7 +42,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "My Passports", icon: LayoutDashboard },
   { href: "/dashboard/mint", label: "Mint New DPP", icon: PlusCircle, requiredRoles: ["farmer"] },
-  { href: "/dashboard/aggregate", label: "Aggregate Lots", icon: Layers, requiredRoles: ["farmer", "processor", "admin"] },
+  { href: "/dashboard/aggregate", label: "Aggregate DPPs", icon: Layers, requiredRoles: ["farmer", "processor", "admin"] },
   { href: "/dashboard/disaggregate", label: "Disaggregate DPP", icon: Split, requiredRoles: ["farmer", "processor", "admin"] },
   { href: "/dashboard/transfer", label: "Transfer DPP", icon: ArrowRightLeft, requiredRoles: ["farmer", "processor", "transporter", "retailer", "admin"] },
   { href: "/dashboard/audit", label: "Audit Report", icon: ClipboardList, requiredRoles: ["admin"] },
