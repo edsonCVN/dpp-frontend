@@ -122,8 +122,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total DPPs", value: ownerFilteredPassports.length },
-          { label: "Active", value: ownerFilteredPassports.filter((p) => p.status === "active").length },
-          { label: "In Transit", value: ownerFilteredPassports.filter((p) => p.status === "in-transit").length },
+          { label: "Active", value: ownerFilteredPassports.filter((p) => p.status === "created").length },
+          { label: "Revoked", value: ownerFilteredPassports.filter((p) => p.status === "revoked").length },
           { label: "Locked", value: ownerFilteredPassports.filter((p) => p.status === "locked-crosschain").length },
         ].map((stat) => (
           <div key={stat.label} className="glass-card rounded-xl p-4">
