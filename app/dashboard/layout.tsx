@@ -16,7 +16,8 @@ import {
   UserCog,
   ChevronDown,
   ArrowRightLeft,
-  Split
+  Split,
+  ClipboardList
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -44,6 +45,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/aggregate", label: "Aggregate Lots", icon: Layers, requiredRoles: ["farmer", "processor", "admin"] },
   { href: "/dashboard/disaggregate", label: "Disaggregate DPP", icon: Split, requiredRoles: ["farmer", "processor", "admin"] },
   { href: "/dashboard/transfer", label: "Transfer DPP", icon: ArrowRightLeft, requiredRoles: ["farmer", "processor", "transporter", "retailer", "admin"] },
+  { href: "/dashboard/audit", label: "Audit Report", icon: ClipboardList, requiredRoles: ["admin"] },
   { href: "/dashboard/roles", label: "Manage Roles", icon: UserCog, requiredRoles: ["admin"] },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ]

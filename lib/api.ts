@@ -210,6 +210,16 @@ export const getCrossChainStatus = async (sessionId: string) => {
   }
 };
 
+export const fetchAuditReport = async () => {
+    try {
+      const response = await apiClient.get("/api/v1/@hyperledger/cactus-plugin-dpp/audit");
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch audit report:", error);
+      throw error;
+    }
+};
+
 // Add more wrappers as needed to match your DigitalProductPassport role functions.
 export default apiClient;
 
