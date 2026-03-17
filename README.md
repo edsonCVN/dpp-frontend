@@ -55,6 +55,7 @@ The frontend never talks to the blockchain directly. All transactions go through
 - **Transport Tracking** — Record location, temperature, and condition data
 - **Retail Updates** — Mark as received and update retail information
 - **Passport Detail View** — Full lifecycle history, certifications, metadata, and packaging/recycling info
+- **Audit Report** — Admin-only full audit trail across all DPPs with history, status summary, and JSON export
 - **Settings** — Configure the API gateway URL at runtime
 
 ## Role Permissions
@@ -65,7 +66,7 @@ The frontend never talks to the blockchain directly. All transactions go through
 | Processor | `0x3C44CdDd...293BC` | Aggregate/disaggregate DPPs, add certifications, amend metadata |
 | Transporter | `0x90F79bf6...b906` | Update transport data (GPS, temperature, conditions) |
 | Retailer | `0x15d34AAf...A65` | Mark as received, update retail data |
-| Admin | `0xf39Fd6e5...266` | All of the above + cross-chain SATP transfers |
+| Admin | `0xf39Fd6e5...266` | All of the above + cross-chain SATP transfers + audit report |
 | Consumer | `0x99655070...4dc` | Read-only (public storefront view) |
 
 ---
@@ -230,6 +231,7 @@ dpp-frontend/
 │       ├── transfer/page.tsx        # Multi-select local and cross-chain transfer
 │       ├── aggregate/page.tsx       # Aggregate DPPs into a lot
 │       ├── disaggregate/page.tsx   # Split a DPP into multiple child DPPs
+│       ├── audit/page.tsx          # Full DPP audit report (admin only)
 │       ├── roles/page.tsx           # Role information and address mapping
 │       ├── settings/page.tsx        # API gateway URL configuration
 │       └── passport/[id]/page.tsx   # Passport detail view

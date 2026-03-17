@@ -15,10 +15,10 @@ import {
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
-export type ProductStatus = "active" | "in-transit" | "received" | "locked"
+export type ProductStatus = "created" | "in-transit" | "received" | "locked"
   | "locked-crosschain"
-  | "retail-ready"
-  | "burned"
+  | "retail"
+  | "revoked"
 
 export interface ProductPassport {
   id: string
@@ -31,7 +31,7 @@ export interface ProductPassport {
 }
 
 const statusConfig: Record<ProductStatus, { label: string; className: string; icon: React.ElementType }> = {
-  active: {
+  created: {
     label: "Active Passport",
     className: "bg-green-500/10 text-green-500 border-green-500/20",
     icon: CheckCircle,
@@ -56,12 +56,12 @@ const statusConfig: Record<ProductStatus, { label: string; className: string; ic
     className: "bg-purple-500/10 text-purple-500 border-purple-500/20",
     icon: Lock,
   },
-  "retail-ready": {
+  retail: {
     label: "Retail Ready",
     className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
     icon: ShoppingBag,
   },
-  burned: {
+  revoked: {
     label: "Revoked",
     className: "bg-gray-500/10 text-gray-400 border-gray-500/20",
     icon: ShieldAlert,
@@ -69,7 +69,7 @@ const statusConfig: Record<ProductStatus, { label: string; className: string; ic
 }
 
 export function ProductCard({ product }: { product: ProductPassport }) {
-  const statusInfo = statusConfig[product.status]
+  const statusInfo = statusConfig[product.status] ?? statusConfig.created
   const StatusIcon = statusInfo.icon
 
   return (

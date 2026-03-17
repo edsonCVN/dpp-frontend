@@ -159,7 +159,7 @@ function buildEventDetails(item: any, actorName: string): { description: string;
 }
 
 const statusConfig: Record<ProductStatus, { label: string; className: string }> = {
-  active: {
+  created: {
     label: "Active Passport",
     className: "bg-green-500/10 text-green-500 border-green-500/20",
   },
@@ -179,11 +179,11 @@ const statusConfig: Record<ProductStatus, { label: string; className: string }> 
     label: "Escrowed Out",
     className: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   },
-  "retail-ready": {
+  retail: {
     label: "Retail Ready",
     className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
   },
-  burned: {
+  revoked: {
     label: "Revoked",
     className: "bg-gray-500/10 text-gray-400 border-gray-500/20",
   }
