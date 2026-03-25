@@ -49,12 +49,13 @@ The frontend never talks to the blockchain directly. All transactions go through
 - **Role-Based Dashboard** — UI adapts to the active role (Farmer, Processor, Transporter, Retailer, Admin, Consumer)
 - **DPP Minting** — Create new passports with structured metadata (origin, variety, calibre, certifications)
 - **Batch Local Transfers** — Transfer one or more DPPs to another address on the same chain
-- **Cross-Chain Transfers (SATP)** — Real SATP Hermes integration: lock on chain 1 → mint + assign on chain 2, with live progress and session ID display
+- **Cross-Chain Transfers (SATP)** — Real SATP Hermes integration: lock on chain 1 → mint + assign on chain 2, with live progress and session ID display. Full metadata, certifications, and history are automatically restored on the destination chain after the transfer completes
 - **DPP Aggregation** — Combine multiple DPPs into a lot with merged metadata and inherited history
 - **DPP Disaggregation** — Split a single DPP into 2–20 independent child DPPs; the origin is revoked and each child inherits the original metadata and certifications
 - **Transport Tracking** — Record location, temperature, and condition data
 - **Retail Updates** — Mark as received and update retail information
 - **Passport Detail View** — Full lifecycle history, certifications, metadata, and packaging/recycling info
+- **Revoked DPP Protection** — Revoked DPPs are read-only: action panels are replaced with a notice, and revoked DPPs are excluded from transfer, aggregate, and disaggregate selections
 - **Audit Report** — Admin-only full audit trail across all DPPs with history, status summary, and JSON export
 - **Settings** — Configure the API gateway URL at runtime
 
@@ -137,20 +138,23 @@ satp-hermes-gateway-1  | OAPI server listening on port 4010
 satp-hermes-gateway-2  | OAPI server listening on port 4110
 ```
 
-#### Step 4 — Start the API gateway
+#### Step 4 — Start both API gateways
 
 ```bash
-# Terminal 5
+# Terminal 5 — Chain 1 API (port 3002)
 cd packages/cactus-plugin-dpp
 npx ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
+
+# Terminal 6 — Chain 2 API (port 3003)
+npx ts-node --project tsconfig.hardhat.json scripts/launch-api-chain2.ts
 ```
 
-Because `deployed-addresses.json` already exists, the API gateway connects to the **same** contracts the SATP gateways use — no redeployment.
+Because `deployed-addresses.json` already exists, both API gateways connect to the **same** contracts the SATP gateways use — no redeployment. The chain-2 API is required for cross-chain transfers: after SATP completes, the chain-1 API calls chain-2's `/restore-cross-chain-data` endpoint to fully restore the DPP's metadata, certifications, and history on the destination chain.
 
 #### Step 5 — Start the frontend
 
 ```bash
-# Terminal 6
+# Terminal 7
 cd dpp-frontend
 npm install
 npm run dev
@@ -164,13 +168,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 After completing a cross-chain transfer you can verify the DPP arrived on chain 2 by running a second frontend instance that points to the chain-2 API.
 
-**Terminal 6 — Chain 1 frontend (port 3000):**
+**Terminal 7 — Chain 1 frontend (port 3000):**
 ```bash
 cd dpp-frontend
 npm run dev
 ```
 
-**Terminal 7 — Chain 2 frontend (port 3001):**
+**Terminal 8 — Chain 2 frontend (port 3001):**
 ```bash
 cd dpp-frontend
 NEXT_PUBLIC_CACTI_API_URL=http://127.0.0.1:3003 NEXT_DIST_DIR=.next-chain2 npm run dev -- -p 3001
@@ -196,9 +200,11 @@ The modal shows real-time progress:
 - **SATP Hermes — Phases 2 & 3** — polls the gateway every 2s until `mint()` + `assign()` complete on chain 2
 - **Transfer Complete** — shows the session ID for auditing
 
+After the SATP transfer completes, the chain-1 API automatically restores the DPP on chain 2 with the **full original data**: product name, creation date, metadata (origin, variety, circular economy info, etc.), certifications, and the complete on-chain history. The DPP on the destination chain is identical to the original, plus a `CrossChainRestore` event marking the transfer.
+
 If the transfer fails, the modal shows the error and a **Try Again** button.
 
-> The SATP gateways (Step 3) must be running for cross-chain transfers to work. Local lifecycle operations (create, transport, receive, etc.) work without them.
+> The SATP gateways (Step 3) and **both API gateways** (chain 1 on port 3002, chain 2 on port 3003) must be running for cross-chain transfers to work. The chain-2 API is needed to receive the `restoreCrossChainData` call after SATP completes. Local lifecycle operations (create, transport, receive, etc.) only need the chain-1 API.
 
 ---
 

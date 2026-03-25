@@ -568,78 +568,90 @@ export default function PassportDetailPage() {
             </Badge>
           </div>
         </div>
-        
-        {/* Role-specific panels */}
-        {currentRole === "consumer" && (
-          <ConsumerPanel productStage="retail" dppId={product.id} onAction={loadData} />
-        )}
 
-        {currentRole === "farmer" && (
-          <FarmerPanel
-            dppId={product.id}
-            onAction={loadData}
-            productData={{
-              origin: product.origin,
-              productionMethod: product.productionMethod,
-              description: product.description,
-              manufacturer: product.manufacturer,
-              variety: product.variety,
-              calibre: product.calibre,
-              brixDegree: product.brixDegree,
-            }}
-          />
-        )}
+        {product.status === "revoked" || product.status === "burned" ? (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-destructive/5 border border-destructive/10">
+            <Shield className="w-5 h-5 text-destructive shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium text-destructive">This DPP has been revoked</p>
+              <p className="text-muted-foreground">No further operations can be performed. You can still consult its details and history above.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Role-specific panels */}
+            {currentRole === "consumer" && (
+              <ConsumerPanel productStage="retail" dppId={product.id} onAction={loadData} />
+            )}
 
-        {currentRole === "processor" && (
-          <ProcessorPanel
-            dppId={product.id}
-            onAction={loadData}
-            productData={{
-              origin: product.origin,
-              productionMethod: product.productionMethod,
-              description: product.description,
-              manufacturer: product.manufacturer,
-              variety: product.variety,
-              calibre: product.calibre,
-              brixDegree: product.brixDegree,
-            }}
-          />
-        )}
+            {currentRole === "farmer" && (
+              <FarmerPanel
+                dppId={product.id}
+                onAction={loadData}
+                productData={{
+                  origin: product.origin,
+                  productionMethod: product.productionMethod,
+                  description: product.description,
+                  manufacturer: product.manufacturer,
+                  variety: product.variety,
+                  calibre: product.calibre,
+                  brixDegree: product.brixDegree,
+                }}
+              />
+            )}
 
-        {currentRole === "transporter" && (
-          <TransporterPanel dppId={product.id} onAction={loadData} />
-        )}
+            {currentRole === "processor" && (
+              <ProcessorPanel
+                dppId={product.id}
+                onAction={loadData}
+                productData={{
+                  origin: product.origin,
+                  productionMethod: product.productionMethod,
+                  description: product.description,
+                  manufacturer: product.manufacturer,
+                  variety: product.variety,
+                  calibre: product.calibre,
+                  brixDegree: product.brixDegree,
+                }}
+              />
+            )}
 
-        {currentRole === "retailer" && (
-          <RetailerPanel
-            dppId={product.id}
-            onAction={loadData}
-            productData={{
-              origin: product.origin,
-              productionMethod: product.productionMethod,
-              description: product.description,
-              manufacturer: product.manufacturer,
-              variety: product.variety,
-              calibre: product.calibre,
-              brixDegree: product.brixDegree,
-            }}
-          />
-        )}
-        
-        {currentRole === "admin" && (
-          <AdminPanel
-            dppId={product.id}
-            onAction={loadData}
-            productData={{
-              origin: product.origin,
-              productionMethod: product.productionMethod,
-              description: product.description,
-              manufacturer: product.manufacturer,
-              variety: product.variety,
-              calibre: product.calibre,
-              brixDegree: product.brixDegree,
-            }}
-          />
+            {currentRole === "transporter" && (
+              <TransporterPanel dppId={product.id} onAction={loadData} />
+            )}
+
+            {currentRole === "retailer" && (
+              <RetailerPanel
+                dppId={product.id}
+                onAction={loadData}
+                productData={{
+                  origin: product.origin,
+                  productionMethod: product.productionMethod,
+                  description: product.description,
+                  manufacturer: product.manufacturer,
+                  variety: product.variety,
+                  calibre: product.calibre,
+                  brixDegree: product.brixDegree,
+                }}
+              />
+            )}
+
+            {currentRole === "admin" && (
+              <AdminPanel
+                dppId={product.id}
+                onAction={loadData}
+                productData={{
+                  origin: product.origin,
+                  productionMethod: product.productionMethod,
+                  description: product.description,
+                  manufacturer: product.manufacturer,
+                  variety: product.variety,
+                  calibre: product.calibre,
+                  brixDegree: product.brixDegree,
+                }}
+              />
+            )}
+          </>
         )}
       </div>
 
