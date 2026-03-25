@@ -47,14 +47,14 @@ The frontend never talks to the blockchain directly. All transactions go through
 ## Features
 
 - **Role-Based Dashboard** — UI adapts to the active role (Farmer, Processor, Transporter, Retailer, Admin, Consumer)
-- **DPP Minting** — Create new passports with structured metadata (origin, variety, calibre, certifications)
+- **DPP Minting with IPFS** — Create new passports with structured metadata and product image upload; both are pinned to IPFS via Pinata before minting, with step-by-step progress (image → metadata → on-chain)
 - **Batch Local Transfers** — Transfer one or more DPPs to another address on the same chain
 - **Cross-Chain Transfers (SATP)** — Real SATP Hermes integration: lock on chain 1 → mint + assign on chain 2, with live progress and session ID display. Full metadata, certifications, and history are automatically restored on the destination chain after the transfer completes
 - **DPP Aggregation** — Combine multiple DPPs into a lot with merged metadata and inherited history
 - **DPP Disaggregation** — Split a single DPP into 2–20 independent child DPPs; the origin is revoked and each child inherits the original metadata and certifications
 - **Transport Tracking** — Record location, temperature, and condition data
 - **Retail Updates** — Mark as received and update retail information
-- **Passport Detail View** — Full lifecycle history, certifications, metadata, and packaging/recycling info
+- **Passport Detail View** — Product image from IPFS, IPFS metadata link, full lifecycle history, certifications, and packaging/recycling info
 - **Revoked DPP Protection** — Revoked DPPs are read-only: action panels are replaced with a notice, and revoked DPPs are excluded from transfer, aggregate, and disaggregate selections
 - **Audit Report** — Admin-only full audit trail across all DPPs with history, status summary, and JSON export
 - **Settings** — Configure the API gateway URL at runtime
@@ -214,6 +214,8 @@ Create a `.env.local` file to override the default API URL:
 
 ```env
 NEXT_PUBLIC_CACTI_API_URL=http://127.0.0.1:3002
+PINATA_JWT=<your-pinata-jwt-token>
+NEXT_PUBLIC_IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs
 ```
 
 The API URL can also be changed at runtime from the **Settings** page.
@@ -221,6 +223,8 @@ The API URL can also be changed at runtime from the **Settings** page.
 | Variable | Default | Description |
 |---|---|---|
 | `NEXT_PUBLIC_CACTI_API_URL` | `http://127.0.0.1:3002` | Base URL of the Cacti DPP REST API |
+| `PINATA_JWT` | — | Pinata JWT for IPFS pinning (server-side only, never exposed to the browser) |
+| `NEXT_PUBLIC_IPFS_GATEWAY` | `https://gateway.pinata.cloud/ipfs` | IPFS HTTP gateway for resolving `ipfs://` URIs |
 | `NEXT_DIST_DIR` | `.next` | Next.js build output directory — set to a different path when running two instances simultaneously |
 
 ## Project Structure
@@ -230,6 +234,8 @@ dpp-frontend/
 ├── app/
 │   ├── layout.tsx                   # Root layout with fonts and metadata
 │   ├── page.tsx                     # Landing page
+│   ├── api/
+│   │   └── ipfs/route.ts           # Next.js API route — proxies Pinata uploads (JWT server-side)
 │   └── dashboard/
 │       ├── layout.tsx               # Dashboard sidebar and navigation
 │       ├── page.tsx                 # Dashboard overview (lists all DPPs)
@@ -254,8 +260,30 @@ dpp-frontend/
 │   └── role-context.tsx             # Active role state and address mapping
 └── lib/
     ├── api.ts                       # Axios client — all Cacti API calls including cross-chain
+    ├── ipfs.ts                      # IPFS helpers — upload image/JSON to Pinata, resolve ipfs:// URIs
     └── utils.ts                     # Shared utilities
 ```
+
+## IPFS Integration (Pinata)
+
+Product images and metadata are pinned to IPFS via [Pinata](https://pinata.cloud) at mint time. The architecture ensures the Pinata JWT never leaves the server:
+
+```
+Browser (mint form)
+  │
+  ├─ POST /api/ipfs  (multipart)  →  Next.js API route  →  Pinata pinFileToIPFS   →  image CID
+  ├─ POST /api/ipfs  (JSON)       →  Next.js API route  →  Pinata pinJSONToIPFS   →  metadata CID
+  │
+  └─ POST /create  (Cacti API)    →  on-chain: stores inline JSON + IPFS CIDs
+```
+
+- **Image CID** is stored in the metadata's `image` field as `ipfs://<CID>`
+- **Metadata CID** is stored in the `metadataCid` field as `ipfs://<CID>`
+- The full metadata JSON is also stored inline on-chain in `additionalMetadataURI` for maximum availability
+- **IPFS is immutable** — the pinned content is a snapshot at mint time. Subsequent amendments (transport, retail, certifications) update only the on-chain JSON; the IPFS CID serves as verifiable proof of the original state
+- **Aggregated lots** inherit the first child's image and metadata CID
+
+To enable IPFS, add `PINATA_JWT` to `.env.local` (see Environment Variables above). Without it, minting still works but images won't be uploaded.
 
 ## Tech Stack
 

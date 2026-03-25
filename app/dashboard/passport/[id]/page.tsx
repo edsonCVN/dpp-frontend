@@ -27,6 +27,7 @@ import { SupplyChainTimeline, type TimelineEvent } from "@/components/supply-cha
 import { PackagingRecycling } from "@/components/packaging-recycling"
 import { useRole, ROLES } from "@/contexts/role-context"
 import { fetchDPPData, fetchDPPHistory, fetchConfig } from "@/lib/api"
+import { ipfsToHttp } from "@/lib/ipfs"
 import { toast } from "sonner"
 import {
   ConsumerPanel,
@@ -246,6 +247,8 @@ export default function PassportDetailPage() {
           ownerAddress: dpp.owner || "Unknown",
           shelfLife: dpp.publicData?.shelfLife || null,
           price: dpp.publicData?.price || null,
+          image: dpp.publicData?.image || "",
+          metadataCid: dpp.publicData?.metadataCid || dpp.metadataCid || "",
         })
       } else if (data.status === "rejected") {
         toast.error(`Failed to load DPP: ${data.reason?.message}`)
@@ -340,9 +343,17 @@ export default function PassportDetailPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-            <Package className="w-7 h-7 text-muted-foreground" />
-          </div>
+          {ipfsToHttp(product.image) ? (
+            <img
+              src={ipfsToHttp(product.image)}
+              alt={product.name}
+              className="w-14 h-14 rounded-xl object-cover shrink-0 border border-border"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+              <Package className="w-7 h-7 text-muted-foreground" />
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
@@ -454,37 +465,22 @@ export default function PassportDetailPage() {
               </div>
 
 
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">On-chain Metadata</p>
-                {(() => {
-                  const uri = product.ipfsUri || "";
-                  // Check if it's a real IPFS CID (starts with ipfs:// or Qm.../bafy...)
-                  const isRealIpfs = uri.startsWith("ipfs://") || /^(Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-zA-Z0-9]{50,})/.test(uri);
-                  if (isRealIpfs) {
-                    return (
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-mono text-primary truncate">{uri}</code>
-                        <a
-                          href={`https://ipfs.io/ipfs/${uri.replace("ipfs://", "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    );
-                  }
-                  // Inline JSON stored directly on-chain (dev/testnet without IPFS)
-                  let pretty = uri;
-                  try { pretty = JSON.stringify(JSON.parse(uri), null, 2); } catch { /* keep as-is */ }
-                  return (
-                    <pre className="text-xs font-mono text-primary bg-primary/5 border border-primary/20 rounded-lg p-3 overflow-auto max-h-40 whitespace-pre-wrap break-all">
-                      {pretty}
-                    </pre>
-                  );
-                })()}
-              </div>
+              {product.metadataCid && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Metadata (IPFS)</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-sm font-mono text-primary truncate">{product.metadataCid}</code>
+                    <a
+                      href={ipfsToHttp(product.metadataCid)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <p className="text-xs text-muted-foreground mb-1.5">Network</p>
@@ -495,6 +491,29 @@ export default function PassportDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Product Image Card */}
+          {ipfsToHttp(product.image) && (
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3">
+                Product Image
+              </h3>
+              <img
+                src={ipfsToHttp(product.image)}
+                alt={product.name}
+                className="w-full rounded-lg border border-border object-cover max-h-64"
+              />
+              <a
+                href={ipfsToHttp(product.image)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-primary hover:underline mt-2"
+              >
+                <ExternalLink className="w-3 h-3" />
+                View on IPFS
+              </a>
+            </div>
+          )}
 
           {/* Description Card */}
           <div className="glass-card rounded-xl p-5">

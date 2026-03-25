@@ -9,11 +9,11 @@ import {
   Truck,
   CheckCircle,
   ShoppingBag,
-  ShieldAlert,
-  ChevronRight
+  ShieldAlert
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { ipfsToHttp } from "@/lib/ipfs"
 
 export type ProductStatus = "created" | "in-transit" | "received" | "locked"
   | "locked-crosschain"
@@ -28,6 +28,7 @@ export interface ProductPassport {
   status: ProductStatus
   ipfsUri?: string
   ownerAddress?: string
+  image?: string
 }
 
 const statusConfig: Record<ProductStatus, { label: string; className: string; icon: React.ElementType }> = {
@@ -77,9 +78,17 @@ export function ProductCard({ product }: { product: ProductPassport }) {
       <div className="glass-card rounded-xl p-5 hover:border-primary/30 transition-all duration-300 group cursor-pointer h-full">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-            <Package className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
+          {product.image && ipfsToHttp(product.image) ? (
+            <img
+              src={ipfsToHttp(product.image)}
+              alt={product.name}
+              className="w-10 h-10 rounded-lg object-cover border border-border"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+              <Package className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+          )}
           <Badge variant="outline" className={cn("text-xs font-medium", statusInfo.className)}>
             <StatusIcon className="w-3 h-3 mr-1" />
             {statusInfo.label}
