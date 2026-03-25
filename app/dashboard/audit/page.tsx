@@ -34,10 +34,21 @@ export default function AuditPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
+  const parseHistoryEntry = (entry: any) => {
+    if (typeof entry === "string") {
+      try { return JSON.parse(entry) } catch { return { event: entry } }
+    }
+    return entry
+  }
+
   const loadReport = async () => {
     setIsLoading(true)
     try {
       const data = await fetchAuditReport()
+      // Parse raw JSON history strings into objects
+      for (const p of data.passports) {
+        p.history = (p.history || []).map(parseHistoryEntry)
+      }
       setReport(data)
     } catch (err: any) {
       toast.error(`Failed to load audit report: ${err.message}`)
@@ -193,7 +204,7 @@ export default function AuditPage() {
                     {/* Owner */}
                     <div className="py-3 text-sm">
                       <span className="text-muted-foreground">Owner: </span>
-                      <span className="font-mono text-xs">{passport.owner || "N/A"}</span>
+                      <span className="font-mono text-xs">{passport.owner === "burned" ? "Burned (no owner)" : passport.owner || "N/A"}</span>
                     </div>
 
                     {/* History timeline */}
@@ -210,7 +221,7 @@ export default function AuditPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="font-medium text-xs">
-                                    {event.eventType || event.type || event.action || "Event"}
+                                    {event.event || event.eventType || event.type || event.action || "Event"}
                                   </p>
                                   <p className="text-xs text-muted-foreground shrink-0">
                                     {event.timestamp
