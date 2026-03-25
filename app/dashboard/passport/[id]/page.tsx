@@ -364,8 +364,6 @@ export default function PassportDetailPage() {
             <p className="text-sm text-muted-foreground font-mono">{product.tokenId}</p>
           </div>
         </div>
-
-        
       </div>
 
       {/* Main Grid */}
@@ -588,7 +586,7 @@ export default function PassportDetailPage() {
           </div>
         </div>
 
-        {product.status === "revoked" || product.status === "burned" ? (
+        {product.status === "revoked" ? (
           <div className="flex items-center gap-3 p-4 rounded-lg bg-destructive/5 border border-destructive/10">
             <Shield className="w-5 h-5 text-destructive shrink-0" />
             <div className="text-sm">

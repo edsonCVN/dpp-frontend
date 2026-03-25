@@ -45,8 +45,8 @@ export default function AggregatePage() {
         // Format to SelectedProduct, filtered by ownership (admin sees all)
         const formattedProducts = livePassports
           .filter((p: any) => {
-            // Exclude burned/revoked DPPs (consumed by previous aggregation)
-            if (p.status === "burned" || p.status === "revoked") return false
+            // Exclude revoked DPPs (consumed by previous aggregation)
+            if (p.status === "revoked") return false
             if (currentRole === "admin") return true
             return p.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
           })
@@ -97,7 +97,7 @@ export default function AggregatePage() {
       const livePassports = await getAllPassports()
       const formattedProducts = livePassports
         .filter((p: any) => {
-          if (p.status === "burned" || p.status === "revoked") return false
+          if (p.status === "revoked") return false
           if (currentRole === "admin") return true
           return p.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
         })

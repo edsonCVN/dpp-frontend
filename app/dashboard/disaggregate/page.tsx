@@ -39,7 +39,7 @@ export default function DisaggregatePage() {
         const livePassports = await getAllPassports()
         const formattedProducts = livePassports
           .filter((p: any) => {
-            if (p.status === "burned" || p.status === "revoked") return false
+            if (p.status === "revoked") return false
             if (currentRole === "admin") return true
             return p.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
           })
@@ -110,7 +110,7 @@ export default function DisaggregatePage() {
             setAvailableProducts(
               livePassports
                 .filter((p: any) => {
-                  if (p.status === "burned" || p.status === "revoked") return false
+                  if (p.status === "revoked") return false
                   if (currentRole === "admin") return true
                   return p.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
                 })
