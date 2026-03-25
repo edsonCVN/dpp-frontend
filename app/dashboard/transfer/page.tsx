@@ -43,8 +43,9 @@ export default function TransferPage() {
     fetchPassports()
   }, [])
 
-  // Only show DPPs the current user owns (admin sees all)
+  // Only show DPPs the current user owns (admin sees all), exclude revoked
   const ownedPassports = passports.filter((passport) => {
+    if (passport.status === "revoked") return false
     if (currentRole === "admin") return true
     return passport.ownerAddress?.toLowerCase() === roleInfo.address.toLowerCase()
   })
