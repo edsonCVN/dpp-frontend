@@ -2,15 +2,18 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  ArrowLeft, 
-  Loader2, 
+import {
+  ArrowLeft,
+  Loader2,
   CheckCircle,
   FileText,
   Calendar,
   Link as LinkIcon,
   Hash,
-  Info
+  Info,
+  ImagePlus,
+  Upload,
+  X
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -18,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createDPP } from "@/lib/api"
+import { uploadImageToIPFS, uploadJSONToIPFS } from "@/lib/ipfs"
 import { toast } from "sonner"
 import { useRole } from "@/contexts/role-context"
 
@@ -39,6 +43,9 @@ export default function MintPage() {
   const { roleInfo, hasPermission } = useRole()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadStep, setUploadStep] = useState("")
   const [formData, setFormData] = useState<MintFormData>({
     productName: "",
     productDescription: "",
@@ -52,12 +59,32 @@ export default function MintPage() {
     manufacturer: "",
   })
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     try {
       const certsList = formData.certifications.split(',').map(c => c.trim()).filter(Boolean)
+
+      // Step 1 — Upload image to IPFS (if provided)
+      let imageCid = ""
+      if (imageFile) {
+        setUploadStep("Uploading image to IPFS...")
+        imageCid = await uploadImageToIPFS(imageFile, `${formData.productName}-image`)
+        toast.success("Image pinned to IPFS!")
+      }
 
       // Build OpenSea-compatible attributes array
       const attributes: Array<Record<string, string | number>> = [
@@ -71,10 +98,10 @@ export default function MintPage() {
         attributes.push({ trait_type: "Grau Brix", value: formData.brixDegree })
       }
 
-      const generatedMetadataJSON = JSON.stringify({
+      const metadataObj = {
         name: formData.productName,
         description: formData.productDescription,
-        image: "ipfs://placeholder_image_cid",
+        image: imageCid ? `ipfs://${imageCid}` : "",
         attributes,
         origin: formData.origin,
         productionMethod: formData.productionMethod,
@@ -92,9 +119,15 @@ export default function MintPage() {
           instructions: "Flatten the cardboard box to save space. Separate the plastic film before recycling.",
           return_scheme: "Return intact wooden baskets to participating Cerfundão partners for a €0.50 discount on your next purchase.",
         },
-      });
+      }
 
-      // Send real transaction to the Cacti Proxy Backend
+      // Step 2 — Upload full metadata JSON to IPFS
+      setUploadStep("Uploading metadata to IPFS...")
+      const metadataCid = await uploadJSONToIPFS(metadataObj, `${formData.productName}-metadata`)
+      toast.success("Metadata pinned to IPFS!")
+
+      // Step 3 — Mint the DPP on-chain (store both IPFS CID and inline JSON)
+      setUploadStep("Minting on-chain...")
       const response = await createDPP({
          owner: roleInfo.address,
          productionData: {
@@ -108,10 +141,12 @@ export default function MintPage() {
            brixDegree: formData.brixDegree,
            certifications: certsList,
            manufacturer: roleInfo.userName,
-           ipfsUri: generatedMetadataJSON,
+           image: imageCid ? `ipfs://${imageCid}` : "",
+           metadataCid: `ipfs://${metadataCid}`,
+           ipfsUri: JSON.stringify(metadataObj),
          }
       })
-      
+
       console.log("Success Mint Response:", response)
       setIsSuccess(true)
       toast.success(`Success! DPP created with internal ID: ${response.dppId}`)
@@ -124,6 +159,7 @@ export default function MintPage() {
         toast.error(`Mint Failed: ${e.message}`)
     } finally {
         setIsLoading(false)
+        setUploadStep("")
     }
   }
 
@@ -257,6 +293,47 @@ export default function MintPage() {
             </div>
           </div>
 
+          {/* Product Image */}
+          <div>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+              Product Image
+            </h3>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm">
+                <ImagePlus className="w-3.5 h-3.5 text-muted-foreground" />
+                Upload Image (PNG, JPG, or WebP)
+              </Label>
+              {imagePreview ? (
+                <div className="relative w-full max-w-xs">
+                  <img
+                    src={imagePreview}
+                    alt="Product preview"
+                    className="w-full h-48 object-cover rounded-lg border border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-secondary/30">
+                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                  <span className="text-sm text-muted-foreground">Click to select an image</span>
+                  <span className="text-xs text-muted-foreground/60 mt-1">Will be pinned to IPFS via Pinata</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           {/* Metadata Section */}
           <div>
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
@@ -356,10 +433,11 @@ export default function MintPage() {
               <div className="flex gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div className="text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground mb-1">Auto-generated IPFS Metadata</p>
+                  <p className="font-medium text-foreground mb-1">IPFS-Pinned ERC-721 Metadata</p>
                   <p>
-                    These fields will be automatically formatted into a JSON metadata structure 
-                    compliant with the ERC-721 standard before being pushed to the ledger.
+                    The product image and full metadata JSON are pinned to IPFS via Pinata
+                    before minting. The on-chain record stores both the IPFS CID and the
+                    inline JSON for maximum availability.
                   </p>
                 </div>
               </div>
@@ -377,7 +455,7 @@ export default function MintPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Minting Passport...
+                  {uploadStep || "Minting Passport..."}
                 </>
               ) : (
                 "Mint Digital Product Passport"
