@@ -147,7 +147,6 @@ export default function MintPage() {
          }
       })
 
-      console.log("Success Mint Response:", response)
       setIsSuccess(true)
       toast.success(`Success! DPP created with internal ID: ${response.dppId}`)
 

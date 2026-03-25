@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
   // Filter passports by role:
   // - Admin: sees all DPPs
-  // - Consumer: sees only DPPs marked as available (received/retail-ready status)
+  // - Consumer: sees only DPPs marked as available (received/retail status)
   // - Other roles: see only DPPs they own
   const ownerFilteredPassports = passports.filter((passport) => {
     if (currentRole === "admin") return true

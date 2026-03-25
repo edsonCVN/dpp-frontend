@@ -82,7 +82,6 @@ export default function AuditPage() {
       case "retail":
         return "bg-orange-500/10 text-orange-500"
       case "revoked":
-      case "burned":
         return "bg-red-500/10 text-red-500"
       default:
         return "bg-secondary text-muted-foreground"
@@ -135,7 +134,7 @@ export default function AuditPage() {
             <div>
               <p className="text-muted-foreground">Active</p>
               <p className="text-2xl font-bold text-green-500">
-                {report.passports.filter((p) => !["revoked", "burned"].includes(p.status?.toLowerCase())).length}
+                {report.passports.filter((p) => p.status?.toLowerCase() !== "revoked").length}
               </p>
             </div>
             <div>
