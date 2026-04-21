@@ -6,23 +6,23 @@ Next.js dashboard for managing **Digital Product Passports (DPP)** powered by ER
 
 ```
 ┌──────────────────┐     ┌──────────────────────────────────┐
-│  DPP Frontend    │────▶│    Cacti API Gateway (Chain 1)    │
-│  Next.js :3000   │     │    Express :3002                  │
+│  DPP Frontend    │────▶│    Cacti API Gateway (Chain 1)   │
+│  Next.js :3000   │     │    Express :3002                 │
 └──────────────────┘     └──┬──────────────────────────┬────┘
-                             │                          │
+                            │                          │
                        Local ops                 /cross-chain-transfer
-                             │                          │
-                             ▼                          ▼
-                  ┌──────────────────┐    ┌───────────────────────┐
-                  │  Chain 1         │    │  SATP Hermes Gateway-1│
-                  │  Hardhat :8545   │    │  Port 4010            │
-                  └──────────────────┘    └───────────┬───────────┘
-                                                      │ SATP protocol
-                                                      ▼
-                                         ┌───────────────────────┐
-                                         │  SATP Hermes Gateway-2│
-                                         │  Port 4110            │
-                                         └───────────┬───────────┘
+                            │                          │
+                            ▼                          ▼
+                  ┌──────────────────┐   ┌────────────────────────┐
+                  │  Chain 1         │   │  SATP Hermes Gateway-1 │
+                  │  Hardhat :8545   │   │  Port 4010             │
+                  └──────────────────┘   └───────────┬────────────┘
+                                                     │ SATP protocol
+                                                     ▼
+                                         ┌────────────────────────┐
+                                         │  SATP Hermes Gateway-2 │
+                                         │  Port 4110             │
+                                         └───────────┬────────────┘
                                                      │
                                                      ▼
                                           ┌──────────────────┐
