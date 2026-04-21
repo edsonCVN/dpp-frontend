@@ -78,7 +78,7 @@ export default function MintPage() {
     try {
       const certsList = formData.certifications.split(',').map(c => c.trim()).filter(Boolean)
 
-      // Step 1 — Upload image to IPFS (if provided)
+      // Step 1 - Upload image to IPFS (if provided)
       let imageCid = ""
       if (imageFile) {
         setUploadStep("Uploading image to IPFS...")
@@ -121,12 +121,12 @@ export default function MintPage() {
         },
       }
 
-      // Step 2 — Upload full metadata JSON to IPFS
+      // Step 2 - Upload full metadata JSON to IPFS
       setUploadStep("Uploading metadata to IPFS...")
       const metadataCid = await uploadJSONToIPFS(metadataObj, `${formData.productName}-metadata`)
       toast.success("Metadata pinned to IPFS!")
 
-      // Step 3 — Mint the DPP on-chain (store both IPFS CID and inline JSON)
+      // Step 3 - Mint the DPP on-chain (store both IPFS CID and inline JSON)
       setUploadStep("Minting on-chain...")
       const response = await createDPP({
          owner: roleInfo.address,

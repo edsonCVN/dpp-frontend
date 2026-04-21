@@ -84,7 +84,7 @@ export function TransferModal({ isOpen, onClose, passports }: TransferModalProps
     for (let i = 0; i < passports.length; i++) {
       setCurrentIndex(i)
 
-      // ── Phase 1: Lock — call /cross-chain-transfer ─────────────────────────
+      // ── Phase 1: Lock - call /cross-chain-transfer ─────────────────────────
       setStep("locking")
       let sessionId: string
       try {
@@ -122,7 +122,7 @@ export function TransferModal({ isOpen, onClose, passports }: TransferModalProps
             return
           }
         } catch {
-          // Status endpoint may not respond immediately — keep polling
+          // Status endpoint may not respond immediately - keep polling
         }
         attempts++
       }
@@ -241,7 +241,7 @@ export function TransferModal({ isOpen, onClose, passports }: TransferModalProps
               <p className="text-sm text-muted-foreground text-center mb-6">
                 {step === "complete"
                   ? `All ${passports.length} DPPs transferred`
-                  : `Processing ${currentIndex + 1} of ${passports.length} — ${passports[currentIndex]?.name}`}
+                  : `Processing ${currentIndex + 1} of ${passports.length} - ${passports[currentIndex]?.name}`}
               </p>
             )}
 
@@ -258,13 +258,13 @@ export function TransferModal({ isOpen, onClose, passports }: TransferModalProps
               <TransferStepItem
                 icon={<Lock className="w-5 h-5" />}
                 title="Locking Asset on Source Chain"
-                description="Calling lock() on the DPP contract — NFT moves to bridge custody"
+                description="Calling lock() on the DPP contract - NFT moves to bridge custody"
                 status={step === "locking" ? "active" : step === "gateway" || step === "complete" ? "complete" : "pending"}
               />
 
               <TransferStepItem
                 icon={<Zap className="w-5 h-5" />}
-                title="SATP Hermes — Phases 2 & 3"
+                title="SATP Hermes - Phases 2 & 3"
                 description={
                   step === "gateway"
                     ? `Mint + assign on destination chain… polling every ${POLL_INTERVAL_MS / 1000}s`

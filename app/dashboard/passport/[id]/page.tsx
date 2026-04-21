@@ -78,10 +78,10 @@ function buildEventDetails(item: any, actorName: string): { description: string;
       }
     case "Transport":
       if (item.locationFrom && item.locationTo) {
-        const cond = item.conditionData && item.conditionData !== "{}" ? ` — ${item.conditionData}` : ""
+        const cond = item.conditionData && item.conditionData !== "{}" ? ` - ${item.conditionData}` : ""
         return {
           description: `Shipped from ${item.locationFrom} to ${item.locationTo}${cond}`,
-          location: `${item.locationFrom} → ${item.locationTo}`,
+          location: `${item.locationFrom} -> ${item.locationTo}`,
         }
       }
       return { description: `Shipped by ${actorName}`, location: "In Transit" }
@@ -117,7 +117,7 @@ function buildEventDetails(item: any, actorName: string): { description: string;
       }
     case "Disaggregated":
       return {
-        description: `DPP split into multiple copies by ${actorName} — original revoked`,
+        description: `DPP split into multiple copies by ${actorName} - original revoked`,
         location: "Processing Facility",
       }
     case "Amend":

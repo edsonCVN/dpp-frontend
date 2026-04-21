@@ -46,18 +46,18 @@ The frontend never talks to the blockchain directly. All transactions go through
 
 ## Features
 
-- **Role-Based Dashboard** — UI adapts to the active role (Farmer, Processor, Transporter, Retailer, Admin, Consumer)
-- **DPP Minting with IPFS** — Create new passports with structured metadata and product image upload; both are pinned to IPFS via Pinata before minting, with step-by-step progress (image → metadata → on-chain)
-- **Batch Local Transfers** — Transfer one or more DPPs to another address on the same chain
-- **Cross-Chain Transfers (SATP)** — Real SATP Hermes integration: lock on chain 1 → mint + assign on chain 2, with live progress and session ID display. Full metadata, certifications, and history are automatically restored on the destination chain after the transfer completes
-- **DPP Aggregation** — Combine multiple DPPs into a lot with merged metadata and inherited history
-- **DPP Disaggregation** — Split a single DPP into 2–20 independent child DPPs; the origin is revoked and each child inherits the original metadata and certifications
-- **Transport Tracking** — Record location, temperature, and condition data
-- **Retail Updates** — Mark as received and update retail information
-- **Passport Detail View** — Product image from IPFS, IPFS metadata link, full lifecycle history, certifications, and packaging/recycling info
-- **Revoked DPP Protection** — Revoked DPPs are read-only: action panels are replaced with a notice, and revoked DPPs are excluded from transfer, aggregate, and disaggregate selections
-- **Audit Report** — Admin-only full audit trail across all DPPs with history, status summary, and JSON export
-- **Settings** — Configure the API gateway URL at runtime
+- **Role-Based Dashboard** - UI adapts to the active role (Farmer, Processor, Transporter, Retailer, Admin, Consumer)
+- **DPP Minting with IPFS** - Create new passports with structured metadata and product image upload; both are pinned to IPFS via Pinata before minting, with step-by-step progress (image -> metadata -> on-chain)
+- **Batch Local Transfers** - Transfer one or more DPPs to another address on the same chain
+- **Cross-Chain Transfers (SATP)** - Real SATP Hermes integration: lock on chain 1 -> mint + assign on chain 2, with live progress and session ID display. Full metadata, certifications, and history are automatically restored on the destination chain after the transfer completes
+- **DPP Aggregation** - Combine multiple DPPs into a lot with merged metadata and inherited history
+- **DPP Disaggregation** - Split a single DPP into 2–20 independent child DPPs; the origin is revoked and each child inherits the original metadata and certifications
+- **Transport Tracking** - Record location, temperature, and condition data
+- **Retail Updates** - Mark as received and update retail information
+- **Passport Detail View** - Product image from IPFS, IPFS metadata link, full lifecycle history, certifications, and packaging/recycling info
+- **Revoked DPP Protection** - Revoked DPPs are read-only: action panels are replaced with a notice, and revoked DPPs are excluded from transfer, aggregate, and disaggregate selections
+- **Audit Report** - Admin-only full audit trail across all DPPs with history, status summary, and JSON export
+- **Settings** - Configure the API gateway URL at runtime
 
 ## Role Permissions
 
@@ -74,21 +74,21 @@ The frontend never talks to the blockchain directly. All transactions go through
 
 ## Getting Started
 
-### Option A — Local only (single chain, no SATP)
+### Option A - Local only (single chain, no SATP)
 
 The minimal setup for developing and testing local DPP lifecycle operations.
 
 ```bash
-# Terminal 1 — local blockchain
+# Terminal 1 - local blockchain
 cd packages/cactus-plugin-dpp
 npx hardhat node --port 8545
 
-# Terminal 2 — deploy contract and start API gateway
+# Terminal 2 - deploy contract and start API gateway
 npx ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
 ```
 
 ```bash
-# Terminal 3 — frontend
+# Terminal 3 - frontend
 cd dpp-frontend
 npm install
 npm run dev
@@ -98,11 +98,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-### Option B — Full SATP mode (local + cross-chain)
+### Option B - Full SATP mode (local + cross-chain)
 
 Run all services so the frontend can do both local operations and real cross-chain transfers.
 
-#### Step 1 — Start both Hardhat nodes
+#### Step 1 - Start both Hardhat nodes
 
 ```bash
 # Terminal 1
@@ -113,7 +113,7 @@ npx hardhat node --port 8545
 npx hardhat node --port 8546
 ```
 
-#### Step 2 — Compile and deploy to both chains
+#### Step 2 - Compile and deploy to both chains
 
 ```bash
 # Terminal 3
@@ -124,7 +124,7 @@ node scripts/deploy-dpp.js
 
 This deploys the contract on both chains, grants all roles (including BRIDGE_ROLE and supply-chain roles), mints demo DPP token #1001 on chain 1, and writes `gateway/deployed-addresses.json`.
 
-#### Step 3 — Start the SATP Hermes Gateways
+#### Step 3 - Start the SATP Hermes Gateways
 
 ```bash
 # Terminal 4
@@ -138,20 +138,20 @@ satp-hermes-gateway-1  | OAPI server listening on port 4010
 satp-hermes-gateway-2  | OAPI server listening on port 4110
 ```
 
-#### Step 4 — Start both API gateways
+#### Step 4 - Start both API gateways
 
 ```bash
-# Terminal 5 — Chain 1 API (port 3002)
+# Terminal 5 - Chain 1 API (port 3002)
 cd packages/cactus-plugin-dpp
 npx ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
 
-# Terminal 6 — Chain 2 API (port 3003)
+# Terminal 6 - Chain 2 API (port 3003)
 npx ts-node --project tsconfig.hardhat.json scripts/launch-api-chain2.ts
 ```
 
-Because `deployed-addresses.json` already exists, both API gateways connect to the **same** contracts the SATP gateways use — no redeployment. The chain-2 API is required for cross-chain transfers: after SATP completes, the chain-1 API calls chain-2's `/restore-cross-chain-data` endpoint to fully restore the DPP's metadata, certifications, and history on the destination chain.
+Because `deployed-addresses.json` already exists, both API gateways connect to the **same** contracts the SATP gateways use - no redeployment. The chain-2 API is required for cross-chain transfers: after SATP completes, the chain-1 API calls chain-2's `/restore-cross-chain-data` endpoint to fully restore the DPP's metadata, certifications, and history on the destination chain.
 
-#### Step 5 — Start the frontend
+#### Step 5 - Start the frontend
 
 ```bash
 # Terminal 7
@@ -168,13 +168,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 After completing a cross-chain transfer you can verify the DPP arrived on chain 2 by running a second frontend instance that points to the chain-2 API.
 
-**Terminal 7 — Chain 1 frontend (port 3000):**
+**Terminal 7 - Chain 1 frontend (port 3000):**
 ```bash
 cd dpp-frontend
 npm run dev
 ```
 
-**Terminal 8 — Chain 2 frontend (port 3001):**
+**Terminal 8 - Chain 2 frontend (port 3001):**
 ```bash
 cd dpp-frontend
 NEXT_PUBLIC_CACTI_API_URL=http://127.0.0.1:3003 NEXT_DIST_DIR=.next-chain2 npm run dev -- -p 3001
@@ -196,15 +196,15 @@ Open [http://localhost:3000](http://localhost:3000) for Chain 1 and [http://loca
 6. Click **Initialize Transfer**
 
 The modal shows real-time progress:
-- **Locking Asset** — calls `lock()` on chain 1, returns a SATP session ID
-- **SATP Hermes — Phases 2 & 3** — polls the gateway every 2s until `mint()` + `assign()` complete on chain 2
-- **Transfer Complete** — shows the session ID for auditing
+- **Locking Asset** - calls `lock()` on chain 1, returns a SATP session ID
+- **SATP Hermes - Phases 2 & 3** - polls the gateway every 2s until `mint()` + `assign()` complete on chain 2
+- **Transfer Complete** - shows the session ID for auditing
 
-After the SATP transfer completes, the chain-1 API automatically restores the DPP on chain 2 with the **full original data**: product name, creation date, metadata (origin, variety, circular economy info, etc.), certifications, and the complete on-chain history. The DPP on the destination chain is identical to the original, plus a `CrossChainRestore` event marking the transfer.
+After the SATP transfer completes, the chain-1 API automatically restores the DPP on chain 2 with the **full original data**: product name, creation date, metadata (origin, variety, circular economy info, etc.), certifications, and the complete on-chain history. The DPP on the destination chain is identical to the original, plus a `CrossChainImport` event marking the transfer.
 
 If the transfer fails, the modal shows the error and a **Try Again** button.
 
-> The SATP gateways (Step 3) and **both API gateways** (chain 1 on port 3002, chain 2 on port 3003) must be running for cross-chain transfers to work. The chain-2 API is needed to receive the `restoreCrossChainData` call after SATP completes. Local lifecycle operations (create, transport, receive, etc.) only need the chain-1 API.
+> The SATP gateways (Step 3) and **both API gateways** (chain 1 on port 3002, chain 2 on port 3003) must be running for cross-chain transfers to work. The chain-2 API is needed to receive the `importCrossChainData` call after SATP completes. Local lifecycle operations (create, transport, receive, etc.) only need the chain-1 API.
 
 ---
 
@@ -223,9 +223,9 @@ The API URL can also be changed at runtime from the **Settings** page.
 | Variable | Default | Description |
 |---|---|---|
 | `NEXT_PUBLIC_CACTI_API_URL` | `http://127.0.0.1:3002` | Base URL of the Cacti DPP REST API |
-| `PINATA_JWT` | — | Pinata JWT for IPFS pinning (server-side only, never exposed to the browser) |
+| `PINATA_JWT` | - | Pinata JWT for IPFS pinning (server-side only, never exposed to the browser) |
 | `NEXT_PUBLIC_IPFS_GATEWAY` | `https://gateway.pinata.cloud/ipfs` | IPFS HTTP gateway for resolving `ipfs://` URIs |
-| `NEXT_DIST_DIR` | `.next` | Next.js build output directory — set to a different path when running two instances simultaneously |
+| `NEXT_DIST_DIR` | `.next` | Next.js build output directory - set to a different path when running two instances simultaneously |
 
 ## Project Structure
 
@@ -235,7 +235,7 @@ dpp-frontend/
 │   ├── layout.tsx                   # Root layout with fonts and metadata
 │   ├── page.tsx                     # Landing page
 │   ├── api/
-│   │   └── ipfs/route.ts           # Next.js API route — proxies Pinata uploads (JWT server-side)
+│   │   └── ipfs/route.ts           # Next.js API route - proxies Pinata uploads (JWT server-side)
 │   └── dashboard/
 │       ├── layout.tsx               # Dashboard sidebar and navigation
 │       ├── page.tsx                 # Dashboard overview (lists all DPPs)
@@ -259,8 +259,8 @@ dpp-frontend/
 ├── contexts/
 │   └── role-context.tsx             # Active role state and address mapping
 └── lib/
-    ├── api.ts                       # Axios client — all Cacti API calls including cross-chain
-    ├── ipfs.ts                      # IPFS helpers — upload image/JSON to Pinata, resolve ipfs:// URIs
+    ├── api.ts                       # Axios client - all Cacti API calls including cross-chain
+    ├── ipfs.ts                      # IPFS helpers - upload image/JSON to Pinata, resolve ipfs:// URIs
     └── utils.ts                     # Shared utilities
 ```
 
@@ -271,16 +271,16 @@ Product images and metadata are pinned to IPFS via [Pinata](https://pinata.cloud
 ```
 Browser (mint form)
   │
-  ├─ POST /api/ipfs  (multipart)  →  Next.js API route  →  Pinata pinFileToIPFS   →  image CID
-  ├─ POST /api/ipfs  (JSON)       →  Next.js API route  →  Pinata pinJSONToIPFS   →  metadata CID
+  ├─ POST /api/ipfs  (multipart)  ->  Next.js API route  ->  Pinata pinFileToIPFS   ->  image CID
+  ├─ POST /api/ipfs  (JSON)       ->  Next.js API route  ->  Pinata pinJSONToIPFS   ->  metadata CID
   │
-  └─ POST /create  (Cacti API)    →  on-chain: stores inline JSON + IPFS CIDs
+  └─ POST /create  (Cacti API)    ->  on-chain: stores inline JSON + IPFS CIDs
 ```
 
 - **Image CID** is stored in the metadata's `image` field as `ipfs://<CID>`
 - **Metadata CID** is stored in the `metadataCid` field as `ipfs://<CID>`
 - The full metadata JSON is also stored inline on-chain in `additionalMetadataURI` for maximum availability
-- **IPFS is immutable** — the pinned content is a snapshot at mint time. Subsequent amendments (transport, retail, certifications) update only the on-chain JSON; the IPFS CID serves as verifiable proof of the original state
+- **IPFS is immutable** - the pinned content is a snapshot at mint time. Subsequent amendments (transport, retail, certifications) update only the on-chain JSON; the IPFS CID serves as verifiable proof of the original state
 - **Aggregated lots** inherit the first child's image and metadata CID
 
 To enable IPFS, add `PINATA_JWT` to `.env.local` (see Environment Variables above). Without it, minting still works but images won't be uploaded.

@@ -201,7 +201,7 @@ export const getCrossChainStatus = async (sessionId: string) => {
     );
     return response.data;
   } catch (error: any) {
-    // 400/404 are expected during early polling (session still initialising) — suppress noise
+    // 400/404 are expected during early polling (session still initialising) - suppress noise
     const status = error?.response?.status;
     if (status !== 400 && status !== 404) {
       console.error("Failed to get cross-chain status:", error);

@@ -168,7 +168,7 @@ export function LocalTransferModal({ isOpen, onClose, passports }: LocalTransfer
                   <option value="">Select a recipient...</option>
                   {recipientOptions.map((role) => (
                     <option key={role.id} value={role.address}>
-                      {role.label} — {role.userName}
+                      {role.label} - {role.userName}
                     </option>
                   ))}
                 </select>

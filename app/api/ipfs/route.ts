@@ -9,8 +9,8 @@ const PINATA_API = "https://api.pinata.cloud";
  * Proxies file and JSON uploads to Pinata so the JWT never leaves the server.
  *
  * Two modes (detected automatically):
- *   1. multipart/form-data  → pin a file  (image upload)
- *   2. application/json     → pin JSON    (metadata upload)
+ *   1. multipart/form-data  -> pin a file  (image upload)
+ *   2. application/json     -> pin JSON    (metadata upload)
  *
  * Returns: { IpfsHash, PinSize, Timestamp }
  */
