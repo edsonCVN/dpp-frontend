@@ -74,6 +74,21 @@ The frontend never talks to the blockchain directly. All transactions go through
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js >= 20 (22 LTS recommended)
+- [Yarn 4](https://yarnpkg.com) — required by the Cacti backend workspace
+- The Cacti backend dependencies must be installed once at the repository root:
+
+```bash
+cd <path-to>/cacti-edson-fork
+yarn install
+```
+
+The frontend itself uses `npm` and is independent of that workspace.
+
+---
+
 ### Option A - Local only (single chain, no SATP)
 
 The minimal setup for developing and testing local DPP lifecycle operations.
@@ -81,10 +96,10 @@ The minimal setup for developing and testing local DPP lifecycle operations.
 ```bash
 # Terminal 1 - local blockchain
 cd packages/cactus-plugin-dpp
-npx hardhat node --port 8545
+yarn hardhat node --port 8545
 
 # Terminal 2 - deploy contract and start API gateway
-npx ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
+yarn ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
 ```
 
 ```bash
@@ -107,10 +122,10 @@ Run all services so the frontend can do both local operations and real cross-cha
 ```bash
 # Terminal 1
 cd packages/cactus-plugin-dpp
-npx hardhat node --port 8545
+yarn hardhat node --port 8545
 
 # Terminal 2
-npx hardhat node --port 8546
+yarn hardhat node --port 8546
 ```
 
 #### Step 2 - Compile and deploy to both chains
@@ -118,7 +133,7 @@ npx hardhat node --port 8546
 ```bash
 # Terminal 3
 cd packages/cactus-plugin-dpp
-npx hardhat compile
+yarn hardhat compile
 node scripts/deploy-dpp.js
 ```
 
@@ -143,10 +158,10 @@ satp-hermes-gateway-2  | OAPI server listening on port 4110
 ```bash
 # Terminal 5 - Chain 1 API (port 3002)
 cd packages/cactus-plugin-dpp
-npx ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
+yarn ts-node --project tsconfig.hardhat.json scripts/launch-api.ts
 
 # Terminal 6 - Chain 2 API (port 3003)
-npx ts-node --project tsconfig.hardhat.json scripts/launch-api-chain2.ts
+yarn ts-node --project tsconfig.hardhat.json scripts/launch-api-chain2.ts
 ```
 
 Because `deployed-addresses.json` already exists, both API gateways connect to the **same** contracts the SATP gateways use - no redeployment. The chain-2 API is required for cross-chain transfers: after SATP completes, the chain-1 API calls chain-2's `/restore-cross-chain-data` endpoint to fully restore the DPP's metadata, certifications, and history on the destination chain.
